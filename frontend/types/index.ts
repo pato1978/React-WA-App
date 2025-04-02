@@ -1,13 +1,14 @@
 import type { LucideIcon } from "lucide-react"
 
 export interface Expense {
-  id: number
+  id: string
   name: string
   amount: string
   date: string
   category: string
   icon: LucideIcon
   isPersonal: boolean
+  isShared: boolean
   isChild: boolean
   isRecurring: boolean
 }

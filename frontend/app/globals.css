@@ -108,11 +108,11 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.03);
 }
 
-/* Subtile Hover-Effekte für Karten */
+/* Subtile Hover-Effekte für Karten 
 button.bg-white:active,
 div.bg-white:active {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+}*/
 

@@ -31,13 +31,24 @@ export function convertDateToISO(dateStr: string): string {
 }
 
 // Konvertiert ein Datum von YYYY-MM-DD zu DD.MM.YYYY oder "Heute"
-export function convertDateToDisplay(dateStr: string): string {
-  const today = new Date().toISOString().split("T")[0]
-  if (dateStr === today) {
+export function convertDateToDisplay(date: string): string {
+  if (!date) return ""
+
+  const inputDate = new Date(date)
+  const today = new Date()
+
+  const isSameDay =
+      inputDate.getDate() === today.getDate() &&
+      inputDate.getMonth() === today.getMonth() &&
+      inputDate.getFullYear() === today.getFullYear()
+
+  if (isSameDay) {
     return "Heute"
   }
-  return dateStr.split("-").reverse().join(".")
+
+  return inputDate.toLocaleDateString("de-DE") // z. B. "01.04.2025"
 }
+
 
 // Extrahiert den numerischen Wert aus einem Währungsbetrag
 export function extractAmountValue(amountStr: string): number {

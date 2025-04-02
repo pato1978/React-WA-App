@@ -2,13 +2,22 @@
 import { Trash2, Edit, Repeat } from "lucide-react"
 import type { Expense } from "@/types"
 import { useSwipe } from "@/lib/hooks/use-swipe"
+import {convertDateToDisplay} from "@/lib/utils";
 
 interface ExpenseItemProps {
   item: Expense
   onDelete: (id: number) => void
   onEdit: (expense: Expense) => void
 }
-
+const formatEuro = (amount: string | number) => {
+    const parsed = typeof amount === "string" ? parseFloat(amount.replace(",", ".")) : amount
+    if (isNaN(parsed)) return "–"
+    return new Intl.NumberFormat("de-DE", {
+        style: "currency",
+        currency: "EUR",
+        minimumFractionDigits: 2,
+    }).format(parsed)
+}
 export function ExpenseItem({ item, onDelete, onEdit }: ExpenseItemProps) {
   const Icon = item.icon
 
@@ -66,9 +75,9 @@ ${state.isDragging ? "" : "transition-transform duration-300"} text-sm mb-[0.125
               </span>
             )}
           </div>
-          <div className="text-xs text-gray-500">{item.date}</div>
+          <div className="text-xs text-gray-500">{convertDateToDisplay(item.date)}</div>
         </div>
-        <div className="font-bold text-right">{item.amount}</div>
+        <div className="font-bold text-right">{formatEuro(item.amount)}</div>
       </div>
     </div>
   )

@@ -35,7 +35,7 @@ export default function HomePage() {
 
   const handleAddButtonClick = () => {
     setEditingExpense({
-      id: null,
+      id: "",
       name: "",
       amount: "",
       date: new Date().toISOString().split("T")[0],

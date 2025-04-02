@@ -8,12 +8,17 @@ import {
   User,
   Users,
   Baby,
-  ShoppingCart,
   Shirt,
-  Gamepad,
-  Laptop,
-  Palmtree,
-  HelpCircle,
+  GraduationCap,
+  Palette,
+  Gamepad2,
+  Stethoscope,
+  Bed,
+  Car,
+  Cake,
+  Wallet,
+  HelpCircle, Utensils,
+
 } from "lucide-react"
 import { ToggleSwitch } from "@/components/ui/toggle-switch"
 
@@ -33,22 +38,28 @@ export default function ExpenseEditorModal({
   onSave,
   availableIcons = [
     { icon: Shirt, name: "Kleidung", defaultLabel: "Kleidung" },
-    { icon: Gamepad, name: "Freizeit", defaultLabel: "Freizeit" },
-    { icon: Laptop, name: "Computer", defaultLabel: "Computer" },
-    { icon: ShoppingCart, name: "Lebensmittel", defaultLabel: "Lebensmittel" },
-    { icon: Palmtree, name: "Urlaub", defaultLabel: "Urlaub" },
+    { icon: GraduationCap, name: "Schule", defaultLabel: "Schule" },
+    { icon: Utensils, name: "Essen", defaultLabel: "Essen" },
+    { icon: Palette, name: "Hobbys", defaultLabel: "Hobbys" },
+    { icon: Gamepad2, name: "Spielzeug", defaultLabel: "Spielzeug" },
+    { icon: Stethoscope, name: "Gesundheit", defaultLabel: "Gesundheit" },
+    { icon: Bed, name: "Kinderzimmer", defaultLabel: "Kinderzimmer" },
+    { icon: Car, name: "Transport", defaultLabel: "Transport" },
+    { icon: Cake, name: "Geburtstage", defaultLabel: "Geburtstage" },
+    { icon: Users, name: "Betreuung", defaultLabel: "Betreuung" },
+    { icon: Wallet, name: "Finanzen", defaultLabel: "Finanzen" },
     { icon: HelpCircle, name: "Sonstiges", defaultLabel: "Sonstiges" },
   ],
 }: ExpenseEditorModalProps) {
   const [showIconSelector, setShowIconSelector] = useState(false)
-  const [selectedIcon, setSelectedIcon] = useState(expense?.icon || ShoppingCart)
+  const [selectedIcon, setSelectedIcon] = useState(expense?.icon || HelpCircle)
   const [editingExpense, setEditingExpense] = useState({
     id: null,
     name: "",
     amount: "",
     date: new Date().toISOString().split("T")[0],
     category: "",
-    icon: ShoppingCart,
+    icon: HelpCircle,
     isPersonal: true,
     isChild: false,
     isRecurring: false,
@@ -64,13 +75,13 @@ export default function ExpenseEditorModal({
         amount: "",
         date: new Date().toISOString().split("T")[0],
         category: "",
-        icon: ShoppingCart,
+        icon: HelpCircle,
         isPersonal: true,
         isChild: false,
         isRecurring: false,
         ...expense,
       })
-      setSelectedIcon(expense.icon || ShoppingCart)
+      setSelectedIcon(expense.icon || HelpCircle)
     }
   }, [expense, isOpen])
 
@@ -96,18 +107,20 @@ export default function ExpenseEditorModal({
   const handleSelectIcon = (iconOption) => {
     setSelectedIcon(iconOption.icon)
 
-    // Wenn das Bezeichnungsfeld leer ist oder dem vorherigen Standard entspricht,
-    // setze den neuen Standardnamen
-    const currentSelectedIcon = availableIcons.find((icon) => icon.icon === selectedIcon)
-    if (!editingExpense.name || (currentSelectedIcon && editingExpense.name === currentSelectedIcon.defaultLabel)) {
-      setEditingExpense({
-        ...editingExpense,
-        name: iconOption.defaultLabel,
-      })
-    }
+    setEditingExpense((prev) => {
+      const wasDefaultName = availableIcons.find((i) => i.icon === selectedIcon)?.defaultLabel === prev.name
+      const shouldUpdateName = !prev.name || wasDefaultName
+
+      return {
+        ...prev,
+        category: iconOption.defaultLabel, // 🟦 Immer Kategorie aktualisieren!
+        name: shouldUpdateName ? iconOption.defaultLabel : prev.name, // 🟨 Nur Name überschreiben, wenn er leer oder Standard ist
+      }
+    })
 
     setShowIconSelector(false)
   }
+
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -210,13 +223,21 @@ export default function ExpenseEditorModal({
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 flex items-center pl-2 text-gray-500">€</span>
                 <input
-                  id="expense-amount"
-                  type="text"
-                  className="w-full p-2 pl-6 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
-                  value={editingExpense.amount ? editingExpense.amount.replace("€", "") : ""}
-                  onChange={(e) => setEditingExpense({ ...editingExpense, amount: e.target.value })}
-                  placeholder="0.00"
+                    id="expense-amount"
+                    type="number"
+                    inputMode="decimal"
+                    step="0.01"
+                    className="w-full p-2 pl-6 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
+                    value={editingExpense.amount}
+                    onChange={(e) =>
+                        setEditingExpense({
+                          ...editingExpense,
+                          amount: e.target.value,
+                        })
+                    }
+                    placeholder="0.00"
                 />
+
               </div>
             </div>
 
