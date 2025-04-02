@@ -4,7 +4,7 @@ public class ExpenseDto
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
     public string Name { get; set; } = "";
-    public string Amount { get; set; } = ""; // z. B. "€42.50"// wdadawdadwdadwdr6turh
+    public string Amount { get; set; } = ""; // z. B. "€42.50"// wdadawdadwdadwdr6turhdaw
     public DateTime Date { get; set; } 
     public string Category { get; set; } = "";
     
