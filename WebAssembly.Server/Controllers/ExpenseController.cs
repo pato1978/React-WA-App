@@ -9,7 +9,7 @@ namespace WebAssembly.Server.Controllers
     [Route("api/[controller]")]
     public class ExpensesController : ControllerBase
     {
-        // 📥 GET: /api/expenses/personal
+        // 📥 GET: /api/expenses/personaldawdw
         [HttpGet("personal")]
         public IActionResult GetPersonalExpenses()
         {
