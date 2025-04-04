@@ -17,7 +17,7 @@ namespace WebAssembly.Server.Controllers
             _context = context;
         }
 
-        // 📥 GET: /api/expenses/personal
+       /* // 📥 GET: /api/expenses/personal
         [HttpGet("personal")]
         public async Task<IActionResult> GetPersonalExpenses()
         {
@@ -27,7 +27,31 @@ namespace WebAssembly.Server.Controllers
                 .ToListAsync();
 
             return Ok(personal);
-        }
+        }*/
+       
+       
+       [HttpGet("personal")]
+       public async Task<IActionResult> GetPersonalExpenses([FromQuery] string? month)
+       {
+           if (string.IsNullOrEmpty(month))
+               return BadRequest("Monatsparameter fehlt.");
+
+           if (!DateTime.TryParse(month, out var selectedDate))
+               return BadRequest("Ungültiges Datumsformat.");
+
+           var personal = await _context.Expenses
+               .Where(e =>
+                   e.isPersonal &&
+                   !e.isChild &&
+                   !e.isShared &&
+                   e.Date.Month == selectedDate.Month &&
+                   e.Date.Year == selectedDate.Year)
+               .OrderByDescending(e => e.Date)
+               .ToListAsync();
+
+           return Ok(personal);
+       }
+
 
         // 📥 GET: /api/expenses/shared
         [HttpGet("shared")]

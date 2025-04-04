@@ -13,9 +13,9 @@ import BudgetEditorModal from "@/components/modals/budget-editor-modal"
 import { VerbesserteLitenansicht } from "@/components/dashboard/verbesserte-listenansicht"
 import type { Expense, IconOption } from "@/types"
 import { convertDateToISO, convertDateToDisplay } from "@/lib/utils"
-
+import { useMonth } from "@/context/month-context" // falls noch nicht da
 export default function PersonalPage() {
-  const [currentDate, setCurrentDate] = useState(new Date())
+  const { currentDate, setCurrentDate } = useMonth()
   const [expenses, setExpenses] = useState<Expense[]>([]) // Wird später über die API geladen
   const [isLoading, setIsLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -23,18 +23,19 @@ export default function PersonalPage() {
   const [selectedIcon, setSelectedIcon] = useState<any>(null)
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false)
   const [budget, setBudget] = useState(1200)
-
-  
-
   // Beim Laden der Seite: persönliche Ausgaben vom Blazor-Backend holen.
   useEffect(() => {
     setIsLoading(true)
-    fetch("http://localhost:5289/api/expenses/personal")
+
+    fetch(`http://localhost:5289/api/expenses/personal?month=${currentDate.toISOString()}`)
         .then((res) => res.json())
         .then((data) => setExpenses(data))
         .catch((err) => console.error("Fehler beim Laden der Ausgaben:", err))
         .finally(() => setIsLoading(false))
-  }, [])
+  }, [currentDate]) // ✅ fetch läuft jedes Mal, wenn der Monat sich ändert
+
+ 
+ 
 
   // Öffnet das Modal für eine neue Ausgabe.
   const handleAddButtonClick = () => {
