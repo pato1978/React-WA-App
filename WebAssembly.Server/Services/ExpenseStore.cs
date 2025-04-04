@@ -8,7 +8,7 @@ public class ExpenseStore
     {
         new ExpenseDto
         {
-            Id = Guid.NewGuid().ToString(),
+            
             Name = "Supermarkt",
             Amount = "42.50",
             Date =new DateTime(2025,04,01),
@@ -21,7 +21,7 @@ public class ExpenseStore
         },
         new ExpenseDto
         {
-            Id = Guid.NewGuid().ToString(),
+            
             Name = "Kino",
             Amount = "15.00",
             Date = new DateTime(2025,04,03),

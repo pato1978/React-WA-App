@@ -1,8 +1,12 @@
+using Microsoft.EntityFrameworkCore;
+using WebAssembly.Server.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Füge Controller-Support hinzu
 builder.Services.AddControllers();
-
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite("Data Source=expenses.db"));
 // Optional aber empfohlen: CORS erlauben für React (Frontend auf Port 3000)
 builder.Services.AddCors(options =>
 {

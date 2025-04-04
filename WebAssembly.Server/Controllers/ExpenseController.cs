@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using WebAssembly.Server.Data;
 using WebAssembly.Server.Models;
 using WebAssembly.Server.Services;
 
@@ -9,81 +10,102 @@ namespace WebAssembly.Server.Controllers
     [Route("api/[controller]")]
     public class ExpensesController : ControllerBase
     {
-        // 📥 GET: /api/expenses/personaldawdw
-        [HttpGet("personal")]
-        public IActionResult GetPersonalExpenses()
+        private readonly AppDbContext _context;
+
+        public ExpensesController(AppDbContext context)
         {
-            var personal = ExpenseStore.Expenses
+            _context = context;
+        }
+
+        // 📥 GET: /api/expenses/personal
+        [HttpGet("personal")]
+        public async Task<IActionResult> GetPersonalExpenses()
+        {
+            var personal = await _context.Expenses
                 .Where(e => e.isPersonal && !e.isChild && !e.isShared)
                 .OrderByDescending(e => e.Date)
-                .ToList();
+                .ToListAsync();
 
             return Ok(personal);
         }
 
         // 📥 GET: /api/expenses/shared
         [HttpGet("shared")]
-        public IActionResult GetSharedExpenses()
+        public async Task<IActionResult> GetSharedExpenses()
         {
-            var shared = ExpenseStore.Expenses
+            var shared = await _context.Expenses
                 .Where(e => e.isShared)
                 .OrderByDescending(e => e.Date)
-                .ToList();
+                .ToListAsync();
 
             return Ok(shared);
         }
 
         // 📥 GET: /api/expenses/child
         [HttpGet("child")]
-        public IActionResult GetChildExpenses()
+        public async Task<IActionResult> GetChildExpenses()
         {
-            var child = ExpenseStore.Expenses
+            var child = await _context.Expenses
                 .Where(e => e.isChild)
                 .OrderByDescending(e => e.Date)
-                .ToList();
+                .ToListAsync();
 
             return Ok(child);
         }
 
         // 💾 POST: /api/expenses
         [HttpPost]
-        public IActionResult SaveExpense([FromBody] ExpenseDto newExpense)
+        public async Task<IActionResult> SaveExpense([FromBody] ExpenseDto dto)
         {
-            if (string.IsNullOrWhiteSpace(newExpense.Id))
+            // MonthKey und YearKey basierend auf dem Datum setzen
+            var monthKey = dto.Date.ToString("yyyy-MM");
+            var yearKey = dto.Date.Year.ToString();
+
+            var isNew = string.IsNullOrWhiteSpace(dto.Id);
+            var expenseId = isNew ? Guid.NewGuid().ToString() : dto.Id;
+
+            // Neues oder aktualisiertes Objekt erzeugen
+            var expense = new Expense
             {
-                // Neue Ausgabe → ID generieren
-                newExpense.Id = Guid.NewGuid().ToString();
-                ExpenseStore.Expenses.Add(newExpense);
-            }
-            else
+                Id = expenseId,
+                Name = dto.Name,
+                Amount = dto.Amount,
+                Date = dto.Date,
+                MonthKey = monthKey,
+                YearKey = yearKey,
+                Category = dto.Category,
+                isPersonal = dto.isPersonal,
+                isChild = dto.isChild,
+                isShared = dto.isShared,
+                isRecurring = dto.isRecurring
+            };
+
+            if (!isNew)
             {
-                // Bestehende Ausgabe aktualisieren (nach ID suchen)
-                var existing = ExpenseStore.Expenses.FirstOrDefault(e => e.Id == newExpense.Id);
+                var existing = await _context.Expenses.FirstOrDefaultAsync(e => e.Id == expense.Id);
                 if (existing != null)
                 {
-                    // Eigenschaften aktualisieren
-                    ExpenseStore.Expenses.Remove(existing);
-                    ExpenseStore.Expenses.Add(newExpense);
-                }
-                else
-                {
-                    // Wenn nicht gefunden, einfach hinzufügen
-                    ExpenseStore.Expenses.Add(newExpense);
+                    _context.Expenses.Remove(existing);
                 }
             }
 
-            return Ok(newExpense);
+            await _context.Expenses.AddAsync(expense);
+            await _context.SaveChangesAsync();
+
+            return Ok(expense);
         }
 
         // 🗑️ DELETE: /api/expenses/{id}
         [HttpDelete("{id}")]
-        public IActionResult DeleteExpense(string id)
+        public async Task<IActionResult> DeleteExpense(string id)
         {
-            var expense = ExpenseStore.Expenses.FirstOrDefault(e => e.Id == id);
+            var expense = await _context.Expenses.FirstOrDefaultAsync(e => e.Id == id);
             if (expense == null)
                 return NotFound();
 
-            ExpenseStore.Expenses.Remove(expense);
+            _context.Expenses.Remove(expense);
+            await _context.SaveChangesAsync();
+
             return NoContent();
         }
     }
