@@ -39,18 +39,20 @@ export default function PersonalPage() {
 
   // Öffnet das Modal für eine neue Ausgabe.
   const handleAddButtonClick = () => {
-    setEditingExpense({
-      id: "",
-      name: "",
-      amount: "",
-      date: new Date().toISOString().split("T")[0],
-      category: "",
-      icon: HelpCircle, // Icon wird später automatisch aus der Kategorie abgeleitet.
-      isPersonal: true,
-      isShared:false,
-      isChild: false,
-      isRecurring: false,
-    })
+      setEditingExpense({
+        id: "",
+        name: "",
+        amount: "",
+        date: new Date().toISOString().split("T")[0],
+        category: "",
+        icon: HelpCircle, // Icon wird später automatisch aus der Kategorie abgeleitet.
+        isPersonal: true,
+        isShared:false,
+        isChild: false,
+        isRecurring: false,
+        isBalanced: false,
+
+      })
     // Standardmäßig wird als Fallback HelpCircle gewählt.
     setSelectedIcon(HelpCircle)
     setIsModalOpen(true)

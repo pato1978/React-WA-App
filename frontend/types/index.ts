@@ -11,6 +11,8 @@ export interface Expense {
   isShared: boolean
   isChild: boolean
   isRecurring: boolean
+  isBalanced: boolean
+  
 }
 
 export interface BudgetSummary {

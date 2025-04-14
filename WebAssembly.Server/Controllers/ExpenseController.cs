@@ -101,7 +101,8 @@ namespace WebAssembly.Server.Controllers
                 isPersonal = dto.isPersonal,
                 isChild = dto.isChild,
                 isShared = dto.isShared,
-                isRecurring = dto.isRecurring
+                isRecurring = dto.isRecurring,
+                isBalanced = dto.isBalanced
             };
 
             if (!isNew)
