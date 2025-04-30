@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/layout/page-header"
 import { MonthSelector } from "@/components/layout/month-selector"
 import { CircularProgress } from "@/components/dashboard/circular-progress"
 import ExpenseEditorModal from "@/components/modals/expense-editor-modal"
+import React, { useReducer } from "react"
 
 export default function HomePage() {
   const [currentDate, setCurrentDate] = useState(new Date())

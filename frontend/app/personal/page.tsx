@@ -95,7 +95,7 @@ export default function PersonalPage() {
   }
 
   // Berechnet die Summe aller Ausgaben.
-  const totalExpenses = expenses.reduce((sum, exp) => {
+/*  const totalExpenses = expenses.reduce((sum, exp) => {
     const value = parseFloat(exp.amount.replace("€", "").replace(",", "."))
     return sum + (isNaN(value) ? 0 : value)
   }, 0)
@@ -104,6 +104,8 @@ export default function PersonalPage() {
   const percentageUsed = Math.min(100, Math.round((totalExpenses / budget) * 100))
 
   // Mappt jede Ausgabe so, dass das Icon anhand der Kategorie gesetzt wird.
+  */
+
   // Falls keine passende Kategorie gefunden wird, wird HelpCircle genutzt.
   const mappedExpenses = expenses.map(exp => ({
     ...exp,
