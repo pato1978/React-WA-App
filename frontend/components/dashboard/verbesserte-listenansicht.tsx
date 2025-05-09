@@ -7,7 +7,7 @@ import { ExpenseItem } from "@/components/dashboard/expense-item"
 
 interface VerbesserteLitenansichtProps {
     expenses: Expense[]
-    onDelete: (id: number) => void
+    onDelete: (id: string) => void | Promise<void>
     onEdit: (expense: Expense) => void
 }
 

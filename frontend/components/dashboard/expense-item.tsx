@@ -6,7 +6,7 @@ import {convertDateToDisplay} from "@/lib/utils";
 
 interface ExpenseItemProps {
   item: Expense
-  onDelete: (id: number) => void
+  onDelete: (id: string) => void | Promise<void> // ✅ erlaubt auch async
   onEdit: (expense: Expense) => void
 }
 const formatEuro = (amount: string | number) => {

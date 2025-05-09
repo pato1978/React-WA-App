@@ -1,57 +1,93 @@
-import { createContext, useContext, useEffect, useState } from "react"
+"use client"
+import React, {
+    createContext,
+    useContext,
+    useState,
+    useEffect,
+    type Dispatch,
+    type SetStateAction,
+} from "react"
 import { useMonth } from "@/context/month-context"
 import type { Expense } from "@/types"
 
-// 📌 Typen für besseren Zugriff
+// 📦 Kontext-Typ: was per useBudget() bereitgestellt wird
 type BudgetContextType = {
     budget: number
-    setBudget: (val: number) => void
-        expenses: Expense[]
-setExpenses: (exps: Expense[]) => void
-    totalExpenses: number
-percentageUsed: number
-isLoading: boolean
+    setBudget: (b: number) => void
+    expenses: Expense[]
+    setExpenses: Dispatch<SetStateAction<Expense[]>>
+    isLoading: boolean
+    refreshExpenses: () => void
 }
 
+// 🔧 React-Context erstellen
 const BudgetContext = createContext<BudgetContextType | undefined>(undefined)
 
+// ✅ API-Basis-URL aus .env oder Fallback
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5289"
+
 export function BudgetProvider({ children }: { children: React.ReactNode }) {
-    const [budget, setBudget] = useState(1200) // 💶 Standardbudget, anpassbar
-    const [expenses, setExpenses] = useState<Expense[]>([])
-    const [isLoading, setIsLoading] = useState(true)
+    const [budget, setBudget] = useState(0)                         // monatliches Budget
+    const [expenses, setExpenses] = useState<Expense[]>([])         // Ausgaben des Monats
+    const [isLoadingBudget, setIsLoadingBudget] = useState(false)   // Ladeanzeige für Budget
+    const [isLoadingExpenses, setIsLoadingExpenses] = useState(false) // Ladeanzeige für Ausgaben
+    const [refreshCounter, setRefreshCounter] = useState(0)         // manuelles Neuladen
 
-    const { currentDate } = useMonth() // 🗓️ Monat aus globalem Kontext
+    const { currentDate } = useMonth() // 📆 aus globalem Monats-Context
 
-    // 📥 API-Daten laden, wenn Monat sich ändert
+    // 🧠 Ladeanzeige kombiniert
+    const isLoading = isLoadingBudget || isLoadingExpenses
+
+    // 📦 Budget laden, wenn Monat wechselt
     useEffect(() => {
-        setIsLoading(true)
-        const isoDate = currentDate.toISOString()
+        const monthStr = currentDate.toISOString().slice(0, 7) // z. B. "2025-05"
+        setIsLoadingBudget(true)
 
-        fetch(`http://localhost:5289/api/expenses/personal?month=${isoDate}`)
-            .then((res) => res.json())
-            .then((data) => setExpenses(data))
-            .catch((err) => console.error("Fehler beim Laden:", err))
-            .finally(() => setIsLoading(false))
+        fetch(`${BASE_URL}/api/budget/personal?month=${monthStr}`)
+            .then((r) => r.json())
+            .then((value: number) => setBudget(value))
+            .catch(() => setBudget(0))
+            .finally(() => setIsLoadingBudget(false))
     }, [currentDate])
 
-    // 🧮 Ausgaben aufsummieren
-    const totalExpenses = expenses.reduce((sum, exp) => {
-        const value = parseFloat(exp.amount.replace("€", "").replace(",", "."))
-        return sum + (isNaN(value) ? 0 : value)
-    }, 0)
+    // 💰 Ausgaben für den Monat laden (auch bei manuellem Refresh)
+    useEffect(() => {
+        const iso = currentDate.toISOString()
+        setIsLoadingExpenses(true)
 
-    const percentageUsed = Math.min(100, Math.round((totalExpenses / budget) * 100))
+        fetch(`${BASE_URL}/api/expenses/personal?month=${iso}`)
+            .then((r) => r.json())
+            .then((data: Expense[]) => setExpenses(data))
+            .catch(() => setExpenses([]))
+            .finally(() => setIsLoadingExpenses(false))
+    }, [currentDate, refreshCounter])
+
+    // 💾 Budget speichern für den aktuellen Monat
+    function saveBudget(newBudget: number) {
+        const monthStr = currentDate.toISOString().slice(0, 7)
+        setBudget(newBudget)
+
+        fetch(`${BASE_URL}/api/budget/personal`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ month: monthStr, amount: newBudget }),
+        }).catch(console.error)
+    }
+
+    // 🔁 Manuelles Neuladen der Ausgaben auslösen
+    function refreshExpenses() {
+        setRefreshCounter((c) => c + 1)
+    }
 
     return (
         <BudgetContext.Provider
             value={{
                 budget,
-                setBudget,
+                setBudget: saveBudget, // speichert automatisch beim Setzen
                 expenses,
                 setExpenses,
-                totalExpenses,
-                percentageUsed,
                 isLoading,
+                refreshExpenses,
             }}
         >
             {children}
@@ -59,9 +95,9 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
     )
 }
 
-// 🔧 Custom Hook für Zugriff
+// 🔧 Custom Hook zur Nutzung in Komponenten
 export function useBudget() {
-    const context = useContext(BudgetContext)
-    if (!context) throw new Error("useBudget muss innerhalb eines BudgetProvider verwendet werden")
-    return context
+    const ctx = useContext(BudgetContext)
+    if (!ctx) throw new Error("useBudget must be inside BudgetProvider")
+    return ctx
 }

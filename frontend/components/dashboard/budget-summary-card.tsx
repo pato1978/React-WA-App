@@ -1,35 +1,59 @@
 "use client"
 
 import { useState } from "react"
-
+import {availableIcons} from "@/lib/icon-options";
 interface BudgetSummaryCardProps {
   title: string
   budget: number
-  expenses?: number
+  totalExpenses?: number
   percentageUsed?: number
   onBudgetClick: () => void
   onTitleClick?: () => void
+  onCategoryChange?: (category: string) => void
 }
 
 export function BudgetSummaryCard({
   title,
   budget,
-  expenses = 0,
+  totalExpenses = 0,
   percentageUsed = 0,
   onBudgetClick,
   onTitleClick,
+  onCategoryChange
 }: BudgetSummaryCardProps) {
   const [categoryText, setCategoryText] = useState("gesamt")
-  const isFreizeit = categoryText === "Freizeit"
+  const hideBudget = categoryText !== "gesamt"
 
   // Stelle sicher, dass expenses ein gültiger Wert ist
-  const safeExpenses = typeof expenses === "number" ? expenses : 0
+  const safeExpenses = typeof totalExpenses === "number" ? totalExpenses : 0
   // Berechne percentageUsed falls nicht übergeben
   const safePercentageUsed =
     typeof percentageUsed === "number" ? percentageUsed : Math.min(100, Math.round((safeExpenses / budget) * 100))
 
+
+
+  const chooseCategory = (categoryText) => {
+      let newCategory = "gesamt";
+      if (categoryText === "gesamt") {
+      newCategory = availableIcons[0].name;
+   }
+
+   else {
+     const index = availableIcons.findIndex(icon => icon.name === categoryText);
+     if (index > -1) {
+       const nextIndex = index + 1;
+       newCategory = nextIndex < availableIcons.length ? availableIcons[nextIndex].name : "gesamt"
+     }
+   }
+      setCategoryText(newCategory)
+      // Callback an Parent auslösen
+      if (onCategoryChange) {
+          onCategoryChange(newCategory)
+      }
+  };
+
   return (
-    <div className={`p-4 rounded-lg bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 ${isFreizeit ? "pb-2" : ""}`}>
+    <div className={`p-4 rounded-lg bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 ${hideBudget ? "pb-2" : ""}`}>
       <h4
         className="text-lg font-semibold text-black mb-3 cursor-pointer hover:opacity-80 transition-opacity"
         onClick={onTitleClick || (() => console.log(`${title} Übersicht anzeigen`))}
@@ -40,7 +64,8 @@ export function BudgetSummaryCard({
             className="text-blue-600 text-base font-semibold cursor-pointer"
             onClick={(e) => {
               e.stopPropagation()
-              setCategoryText(categoryText === "gesamt" ? "Freizeit" : "gesamt")
+              chooseCategory(categoryText)
+              //setCategoryText(categoryText === "gesamt" ? "Freizeit" : "gesamt")
             }}
           >
             {categoryText}
@@ -48,7 +73,7 @@ export function BudgetSummaryCard({
         </div>
       </h4>
 
-      {isFreizeit ? (
+      {hideBudget ? (
         // Freizeit-Ansicht - vereinfacht
         <div className="flex justify-between items-center py-2">
           <span className="text-gray-600 font-normal">Ausgegeben:</span>

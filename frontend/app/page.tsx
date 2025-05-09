@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { User, Users, Baby, Info } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { PageLayout } from "@/components/layout/page-layout"
@@ -8,30 +8,35 @@ import { PageHeader } from "@/components/layout/page-header"
 import { MonthSelector } from "@/components/layout/month-selector"
 import { CircularProgress } from "@/components/dashboard/circular-progress"
 import ExpenseEditorModal from "@/components/modals/expense-editor-modal"
-import React, { useReducer } from "react"
+import React from "react"
+import type { Expense } from "@/types"
+import { calculateTotalExpenses, calculatePercentageUsed } from "@/lib/budget-utils"
+// 📌 Gemeinsamer Monats-Kontext
+import { useMonth } from "@/context/month-context"
+// 📌 Persönliches Budget aus dem Budget-Kontext
+import { useBudget } from "@/context/budget-context"
 
 export default function HomePage() {
-  const [currentDate, setCurrentDate] = useState(new Date())
+  // 🔄 Monatsaustausch jetzt aus dem gemeinsamen Context
+  const { currentDate, setCurrentDate } = useMonth()
+
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingExpense, setEditingExpense] = useState(null)
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const router = useRouter()
 
-  // 🔁 Finanzdaten aus REST-API holen
+  // 💰 Persönliche Budget-Daten aus dem BudgetContext
+  const { budget, expenses } = useBudget()
+
+  // 🔁 Finanzdaten für Shared/Child (API-Fetch auskommentiert)
   const [financialData, setFinancialData] = useState({
-    personalBudget: { spent: 0, total: 0, percentage: 0 },
     sharedBudget: { spent: 0, total: 0, percentage: 0 },
     childBudget: { spent: 0, total: 0, percentage: 0 },
   })
 
-  useEffect(() => {
-    fetch("http://localhost:5289/api/financialdata") // Port ggf. anpassen
-        .then((res) => res.json())
-        .then((data) => setFinancialData(data))
-        .catch((err) => console.error("Fehler beim Laden der Finanzdaten:", err))
-  }, [])
-
   const PeriodBadge = ({ period }: { period: string }) => (
-      <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full mt-1">{period}</span>
+      <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full mt-1">
+      {period}
+    </span>
   )
 
   const handleAddButtonClick = () => {
@@ -67,7 +72,8 @@ export default function HomePage() {
         {/* Header Area */}
         <div className="page-header-container scale-80 transform-origin-top">
           <PageHeader title="Overview" />
-          <MonthSelector initialDate={currentDate} onChange={setCurrentDate} />
+          {/* Jetzt ohne Props, liest MonthSelector direkt aus useMonth() */}
+          <MonthSelector />
         </div>
 
         {/* Main Content Area */}
@@ -81,7 +87,7 @@ export default function HomePage() {
               <User className="h-8 w-8 mb-2 text-blue-600" />
               <h3 className="font-semibold text-lg text-center flex items-center">
                 Persönlich
-                <button
+                <span
                     onClick={(e) => {
                       e.stopPropagation()
                       alert("Info zu persönlichen Ausgaben")
@@ -90,19 +96,19 @@ export default function HomePage() {
                     aria-label="Mehr Informationen"
                 >
                   <Info className="h-3 w-3" />
-                </button>
+                </span>
               </h3>
               <PeriodBadge period="monatlich" />
             </div>
             <div className="w-2/3 flex justify-center pl-12">
               <CircularProgress
-                  percentage={financialData.personalBudget.percentage}
+                  percentage={calculatePercentageUsed(calculateTotalExpenses(expenses), budget)}
                   size={90}
                   strokeWidth={8}
                   color="#2563EB"
               >
-                <span className="text-xl font-bold">€{financialData.personalBudget.spent}</span>
-                <span className="text-xs text-gray-500 mt-1">von €{financialData.personalBudget.total}</span>
+                <span className="text-xl font-bold">€{calculateTotalExpenses(expenses)}</span>
+                <span className="text-xs text-gray-500 mt-1">von €{budget}</span>
               </CircularProgress>
             </div>
           </button>
@@ -124,8 +130,12 @@ export default function HomePage() {
                   strokeWidth={8}
                   color="#2563EB"
               >
-                <span className="text-xl font-bold">€{financialData.sharedBudget.spent}</span>
-                <span className="text-xs text-gray-500 mt-1">von €{financialData.sharedBudget.total}</span>
+              <span className="text-xl font-bold">
+                €{financialData.sharedBudget.spent}
+              </span>
+                <span className="text-xs text-gray-500 mt-1">
+                von €{financialData.sharedBudget.total}
+              </span>
               </CircularProgress>
             </div>
           </button>
@@ -147,8 +157,12 @@ export default function HomePage() {
                   strokeWidth={8}
                   color="#2563EB"
               >
-                <span className="text-xl font-bold">€{financialData.childBudget.spent}</span>
-                <span className="text-xs text-gray-500 mt-1">von €{financialData.childBudget.total}</span>
+              <span className="text-xl font-bold">
+                €{financialData.childBudget.spent}
+              </span>
+                <span className="text-xs text-gray-500 mt-1">
+                von €{financialData.childBudget.total}
+              </span>
               </CircularProgress>
             </div>
           </button>

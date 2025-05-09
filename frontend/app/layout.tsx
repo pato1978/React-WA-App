@@ -3,7 +3,7 @@ import "./globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { MonthProvider } from "@/context/month-context" // ✅ NEU
-
+import { BudgetProvider } from "@/context/budget-context" // ✅ Import ergänzen
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
@@ -21,9 +21,12 @@ export default function RootLayout({
       <html lang="de" className="flex justify-center bg-gray-100">
       <body className={`${inter.className} max-w-md w-full bg-[#EAEFF5] min-h-screen overflow-hidden relative`}>
       <MonthProvider> {/* ✅ Zentraler Monatskontext */}
-        <div className="app-container w-full h-full">
-          {children}
-        </div>
+          <BudgetProvider>
+              <div className="app-container w-full h-full">
+                  {children}
+              </div>
+          </BudgetProvider>
+
       </MonthProvider>
       </body>
       </html>

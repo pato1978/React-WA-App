@@ -17,17 +17,7 @@ namespace WebAssembly.Server.Controllers
             _context = context;
         }
 
-       /* // 📥 GET: /api/expenses/personal
-        [HttpGet("personal")]
-        public async Task<IActionResult> GetPersonalExpenses()
-        {
-            var personal = await _context.Expenses
-                .Where(e => e.isPersonal && !e.isChild && !e.isShared)
-                .OrderByDescending(e => e.Date)
-                .ToListAsync();
-
-            return Ok(personal);
-        }*/
+       
        
        
        [HttpGet("personal")]
